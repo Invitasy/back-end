@@ -49,19 +49,6 @@ pids/
 *.seed
 *.pid.lock
 
-# Firebase
-firebase-debug.log*
-firebase-debug.*.log*
-.firebase/
-firebase-credentials.json
-serviceAccountKey.json
-
-# Google Cloud Platform
-app.yaml
-gcp-*.json
-keyfile.json
-credentials.json
-
 # Temporary files
 .tmp/
 .temp/

@@ -1,6 +1,6 @@
 # Wedding Check-In System Backend
 
-A Node.js backend system for managing wedding guest check-ins, built with Express.js, MySQL, and Firebase Authentication.
+A Node.js backend system for managing wedding guest check-ins, built with Express.js and MySQL.
 
 ## Features
 
@@ -10,14 +10,12 @@ A Node.js backend system for managing wedding guest check-ins, built with Expres
 - Souvenir management (individual/family-based)
 - Admin management with role-based access control
 - Real-time check-in statistics and history
-- Secure authentication using Firebase
+- Secure JWT-based authentication
 
 ## Prerequisites
 
 - Node.js >= 18
 - MySQL >= 8.0
-- Firebase account
-- Google Cloud Platform account (for storage)
 
 ## Database Setup
 
