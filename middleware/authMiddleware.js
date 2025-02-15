@@ -1,5 +1,6 @@
-import { verify } from 'jsonwebtoken';
-import { secret } from '../config/jwtConfig';
+import pkg from 'jsonwebtoken';
+const { verify } = pkg;
+import { secret } from '../config/jwtConfig.js';
 
 const authenticate = (req, res, next) => {
   const token = req.header('Authorization')?.split(' ')[1];

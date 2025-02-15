@@ -1,0 +1,119 @@
+openapi: 3.0.0
+tags:
+  - name: QR Code
+    description: QR code generation and scanning endpoints
+paths:
+  /api/qr/scan:
+    post:
+      tags:
+        - QR Code
+      summary: Scan QR code for check-in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrData
+              properties:
+                qrData:
+                  type: string
+                  description: QR code data
+      responses:
+        '200':
+          description: QR code processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRScanResponse'
+        '400':
+          description: Invalid QR code
+          
+  /api/qr/verify:
+    post:
+      tags:
+        - QR Code
+      summary: Verify QR code validity
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrData
+              properties:
+                qrData:
+                  type: string
+      responses:
+        '200':
+          description: QR code verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  isValid:
+                    type: boolean
+                  type:
+                    type: string
+                    enum: [guest, souvenir]
+                  id:
+                    type: string
+
+  /api/qr/generate/{guestId}:
+    post:
+      tags:
+        - QR Code
+      summary: Generate new QR code for guest
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: guestId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+              properties:
+                type:
+                  type: string
+                  enum: [checkin, souvenir]
+      responses:
+        '200':
+          description: QR code generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  qrCode:
+                    type: string
+                    format: uri
+
+components:
+  schemas:
+    QRScanResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            guestInfo:
+              $ref: '../guests.yml#/components/schemas/Guest'
+            souvenirQRCode:
+              type: string

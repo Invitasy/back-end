@@ -1,0 +1,187 @@
+openapi: 3.0.0
+tags:
+  - name: Guests
+    description: Guest management endpoints
+paths:
+  /api/guests:
+    get:
+      tags:
+        - Guests
+      summary: Get all guests
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all guests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Guest'
+        '401':
+          description: Unauthorized
+    post:
+      tags:
+        - Guests
+      summary: Add new guest
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "John Doe"
+                familyId:
+                  type: string
+                  example: "family-123"
+                souvenirType:
+                  type: string
+                  enum: [individual, family]
+                  default: individual
+      responses:
+        '201':
+          description: Guest created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guest'
+
+  /api/guests/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+    put:
+      tags:
+        - Guests
+      summary: Update guest information
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GuestUpdate'
+      responses:
+        '200':
+          description: Guest updated successfully
+        '404':
+          description: Guest not found
+    delete:
+      tags:
+        - Guests
+      summary: Delete guest
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Guest deleted successfully
+        '404':
+          description: Guest not found
+
+  /api/guests/check-in:
+    post:
+      tags:
+        - Guests
+      summary: Check-in guest using QR code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrCode
+              properties:
+                qrCode:
+                  type: string
+      responses:
+        '200':
+          description: Check-in successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckInResponse'
+
+  /api/guests/{id}/manual-check-in:
+    post:
+      tags:
+        - Guests
+      summary: Manual check-in for guest
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Manual check-in successful
+
+components:
+  schemas:
+    Guest:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        familyId:
+          type: string
+        qrCode:
+          type: string
+        isCheckedIn:
+          type: boolean
+        checkInTime:
+          type: string
+          format: date-time
+        souvenirType:
+          type: string
+          enum: [individual, family]
+        souvenirQRCode:
+          type: string
+        souvenirCollected:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    GuestUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        familyId:
+          type: string
+        souvenirType:
+          type: string
+          enum: [individual, family]
+
+    CheckInResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        guest:
+          $ref: '#/components/schemas/Guest'
+        souvenirQRCode:
+          type: string

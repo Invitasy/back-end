@@ -1,4 +1,4 @@
-import { getAdminByEmail } from '../repository/adminRepository';
+import { getAdminByEmail } from '../repository/adminRepository.js';
 import { compare } from 'bcrypt';
 
 const login = async (email, password) => {

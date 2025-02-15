@@ -1,10 +1,26 @@
-import { sign } from 'jsonwebtoken';
-import { secret, expiresIn as _expiresIn } from '../config/jwtConfig';
+import jwt from 'jsonwebtoken';
+import { secret, expiresIn } from '../config/jwtConfig.js';
 
-const generateToken = (admin) => {
-  return sign({ id: admin.id, email: admin.email }, secret, {
-    expiresIn: _expiresIn,
-  });
+export const generateToken = (user) => {
+  return jwt.sign(
+    { 
+      id: user.id, 
+      email: user.email,
+      role: user.role 
+    }, 
+    secret, 
+    { expiresIn }
+  );
 };
 
-export default { generateToken };
+export const verifyToken = (token) => {
+  try {
+    return jwt.verify(token, secret);
+  } catch (error) {
+    throw new Error('Invalid token');
+  }
+};
+
+export const decodeToken = (token) => {
+  return jwt.decode(token);
+};

@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# Logs and backups
+logs/
+backups/
+*.log
+*.sql
+*.dump
+*.backup
+health-*.json
+
+# Build and test
+coverage/
+dist/
+build/
+*.lcov
+.nyc_output
+__tests__/coverage/
+test-results/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Firebase
+firebase-debug.log*
+firebase-debug.*.log*
+.firebase/
+firebase-credentials.json
+serviceAccountKey.json
+
+# Google Cloud Platform
+app.yaml
+gcp-*.json
+keyfile.json
+credentials.json
+
+# Temporary files
+.tmp/
+.temp/
+tmp/
+temp/
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Database dumps and local files
+*.mysql
+*.db
+*.sqlite
+*.sqlite3
+
+# Migration files should be tracked, but exclude any temporary migration files
+*.sql.tmp
+*.sql.bak

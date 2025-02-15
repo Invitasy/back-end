@@ -1,0 +1,72 @@
+openapi: 3.0.0
+tags:
+  - name: Dashboard
+    description: Dashboard and statistics endpoints
+paths:
+  /api/dashboard/stats:
+    get:
+      tags:
+        - Dashboard
+      summary: Get check-in statistics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalGuests:
+                    type: integer
+                  checkedIn:
+                    type: integer
+                  pendingCheckIn:
+                    type: integer
+                  souvenirStats:
+                    type: object
+                    properties:
+                      individual:
+                        type: integer
+                      family:
+                        type: integer
+                      collected:
+                        type: integer
+
+  /api/dashboard/check-in-history:
+    get:
+      tags:
+        - Dashboard
+      summary: Get recent check-ins
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of records to return
+      responses:
+        '200':
+          description: Check-in history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    guestName:
+                      type: string
+                    checkInTime:
+                      type: string
+                      format: date-time
+                    checkinType:
+                      type: string
+                      enum: [qr, manual]
+                    checkedInBy:
+                      type: string
+                    souvenirCollected:
+                      type: boolean
