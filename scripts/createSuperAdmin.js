@@ -1,13 +1,17 @@
-import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import connectDB from '../config/dbConfig.js';
 import logger from '../logger/logger.js';
+import { fileURLToPath } from 'url';
 
 const createSuperAdmin = async (email, password) => {
   try {
     const connection = await connectDB();
     const id = uuidv4();
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await Bun.password.hash(password, {
+      algorithm: "argon2id",
+      memoryCost: 65536, // 64MB
+      timeCost: 2
+    });
 
     const query = `
       INSERT INTO Admin (id, email, password, role)
@@ -45,6 +49,3 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 }
 
 export default createSuperAdmin;
-
-// npm run create-superadmin your.email@example.com yourpassword
-// node scripts/createSuperAdmin.js your.email@example.com yourpassword

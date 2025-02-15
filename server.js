@@ -17,8 +17,6 @@ import {
   scheduleSessionCleanup 
 } from './config/scheduleConfig.js';
 
-const PORT = process.env.PORT || 5000;
-let server = null;
 let isShuttingDown = false;
 
 // Global shutdown handler
@@ -31,13 +29,6 @@ const shutdown = async (signal) => {
   logger.info(`${signal} signal received. Starting graceful shutdown...`);
   
   try {
-    if (server) {
-      await new Promise((resolve) => {
-        server.close(resolve);
-        logger.info('HTTP server closed');
-      });
-    }
-    
     await closePool();
     process.exit(0);
   } catch (error) {
@@ -45,13 +36,6 @@ const shutdown = async (signal) => {
     process.exit(1);
   }
 };
-
-// Clean up resources before Bun hot reloads
-if (process.isBun) {
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
-  process.on('beforeExit', () => shutdown('beforeExit'));
-}
 
 const initializeTables = async () => {
   try {
@@ -92,19 +76,10 @@ const startServer = async () => {
     
     startScheduledTasks();
 
-    // Create server instance and start listening
-    server = app.listen(PORT, () => {
-      logger.info(`Server running on port ${PORT}`);
-      logger.info('Documentation available at /docs');
-    });
-
-    // Handle server errors
-    server.once('error', (error) => {
-      if (error.code === 'EADDRINUSE') {
-        throw new Error(`Port ${PORT} is already in use. Please ensure no other instance is running.`);
-      }
-      throw error;
-    });
+    // Create Bun server instance
+    const server = Bun.serve(app);
+    logger.info(`Server running on port ${app.port}`);
+    logger.info('Documentation available at /docs');
 
   } catch (error) {
     logger.error('Failed to start server:', error);

@@ -1,4 +1,3 @@
-import { hash } from 'bcrypt';
 import * as adminRepository from '../repository/adminRepository.js';
 import { generateToken } from '../util/jwtUtil.js';
 import authService from '../service/authService.js';
@@ -31,7 +30,11 @@ const createAdmin = async (req, res, next) => {
     }
 
     const { email, password, role = 'admin' } = req.body;
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await Bun.password.hash(password, {
+      algorithm: "argon2id",
+      memoryCost: 65536, // 64MB
+      timeCost: 2
+    });
     const admin = await adminRepository.createAdmin({ email, password: hashedPassword, role });
     res.status(201).json(admin);
   } catch (error) {
