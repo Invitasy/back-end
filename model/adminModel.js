@@ -1,8 +1,11 @@
-import connectDB from '../config/dbConfig.js';
+import { getPool } from '../config/dbConfig.js';
 
-// Function to create Admin table
 const createAdminTable = async () => {
-  const connection = await connectDB();
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database pool not initialized');
+  }
+
   const query = `
     CREATE TABLE IF NOT EXISTS Admin (
       AdminID VARCHAR(36) PRIMARY KEY,
@@ -14,8 +17,13 @@ const createAdminTable = async () => {
       UpdatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `;
-  await connection.query(query);
-  await connection.end();
+  try {
+    await pool.query(query);
+    console.log('Admin table initialized successfully');
+  } catch (error) {
+    console.error('Error creating Admin table:', error);
+    throw error;
+  }
 };
 
 export { createAdminTable };

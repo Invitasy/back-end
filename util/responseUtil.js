@@ -1,13 +1,13 @@
-const successResponse = (data, message = 'Success') => ({
+const responseSuccess = (data, message = 'Success') => ({
   success: true,
   message,
   data
 });
 
-const errorResponse = (message = 'Error', code = 500) => ({
+const responseError = (message = 'Error', code = 500) => ({
   success: false,
   message,
   code
 });
 
-export { successResponse, errorResponse };
+export { responseSuccess, responseError };

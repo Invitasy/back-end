@@ -1,6 +1,5 @@
 import express from 'express';
 import guestController from '../controller/guestController.js';
-import authenticate from '../middleware/authMiddleware.js';
 import { authMiddleware, validateEventAccess } from '../middleware/authMiddleware.js';
 import GuestService from '../service/guestService.js';
 import { responseSuccess, responseError } from '../util/responseUtil.js';
@@ -11,7 +10,7 @@ const router = express.Router();
 router.post('/check-in', guestController.checkInGuest);
 
 // Protected routes (require authentication)
-router.use(authenticate);
+router.use(authMiddleware);
 router.post('/', guestController.addGuest);
 router.get('/', guestController.getAllGuests);
 router.put('/:id', guestController.updateGuest);
@@ -22,7 +21,6 @@ router.post('/:id/reprint-souvenir', guestController.reprintSouvenirQR);
 
 // Get deleted guests for an event
 router.get('/:eventId/deleted', 
-  authMiddleware,
   validateEventAccess,
   async (req, res) => {
     try {
@@ -36,7 +34,6 @@ router.get('/:eventId/deleted',
 
 // Soft delete a guest
 router.delete('/:eventId/guests/:guestId', 
-  authMiddleware,
   validateEventAccess,
   async (req, res) => {
     try {
@@ -53,7 +50,6 @@ router.delete('/:eventId/guests/:guestId',
 
 // Restore a deleted guest
 router.post('/:eventId/guests/:guestId/restore', 
-  authMiddleware,
   validateEventAccess,
   async (req, res) => {
     try {

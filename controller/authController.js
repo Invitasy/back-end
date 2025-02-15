@@ -14,9 +14,13 @@ const login = async (req, res, next) => {
   }
 };
 
-const logout = (req, res) => {
-  // Client should handle token removal
-  res.status(200).json({ message: 'Logged out successfully' });
+const logout = async (req, res, next) => {
+  try {
+    // Optionally perform session invalidation here
+    res.status(200).json({ message: 'Logout successful' });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const createAdmin = async (req, res, next) => {
@@ -67,10 +71,4 @@ const getAllAdmins = async (req, res, next) => {
   }
 };
 
-export default {
-  login,
-  logout,
-  createAdmin,
-  deleteAdmin,
-  getAllAdmins
-};
+export { login, logout, createAdmin, deleteAdmin, getAllAdmins };

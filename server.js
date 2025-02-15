@@ -1,5 +1,5 @@
 import app from './app.js';
-import connectDB from './config/dbConfig.js';
+import connectDB, { closePool, getPool } from './config/dbConfig.js';
 import logger from './logger/logger.js';
 import { createAdminTable } from './model/adminModel.js';
 import { createEventTable } from './model/eventModel.js';
@@ -18,6 +18,40 @@ import {
 } from './config/scheduleConfig.js';
 
 const PORT = process.env.PORT || 5000;
+let server = null;
+let isShuttingDown = false;
+
+// Global shutdown handler
+const shutdown = async (signal) => {
+  if (isShuttingDown) {
+    return; // Prevent multiple shutdown attempts
+  }
+  
+  isShuttingDown = true;
+  logger.info(`${signal} signal received. Starting graceful shutdown...`);
+  
+  try {
+    if (server) {
+      await new Promise((resolve) => {
+        server.close(resolve);
+        logger.info('HTTP server closed');
+      });
+    }
+    
+    await closePool();
+    process.exit(0);
+  } catch (error) {
+    logger.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+};
+
+// Clean up resources before Bun hot reloads
+if (process.isBun) {
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('beforeExit', () => shutdown('beforeExit'));
+}
 
 const initializeTables = async () => {
   try {
@@ -29,15 +63,15 @@ const initializeTables = async () => {
     await createCheckinTable();
     await createSouvenirTable();
     await createDatabaseHealthTable();
+    
     logger.info('Database tables initialized successfully');
   } catch (error) {
     logger.error('Failed to initialize tables:', error);
-    process.exit(1);
+    throw error;
   }
 };
 
 const startScheduledTasks = () => {
-  // Start all scheduled tasks
   scheduleFullBackup();
   scheduleEventBackups();
   scheduleHealthChecks();
@@ -47,54 +81,49 @@ const startScheduledTasks = () => {
 
 const startServer = async () => {
   try {
-    // Test database connection
-    const pool = await connectDB();
+    // Initialize database and tasks first
+    await connectDB();
     logger.info('Database connection established');
     
-    // Initialize database tables
     await initializeTables();
     
-    // Initial health check
     const healthStatus = await DatabaseHealth.checkConnection();
     logger.info('Initial health check:', healthStatus);
-
-    // Start scheduled tasks
-    startScheduledTasks();
     
-    // Start Express server
-    app.listen(PORT, () => {
+    startScheduledTasks();
+
+    // Create server instance and start listening
+    server = app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info('Documentation available at /docs');
     });
+
+    // Handle server errors
+    server.once('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        throw new Error(`Port ${PORT} is already in use. Please ensure no other instance is running.`);
+      }
+      throw error;
+    });
+
   } catch (error) {
     logger.error('Failed to start server:', error);
+    await closePool();
     process.exit(1);
   }
 };
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', async (error) => {
   logger.error('Uncaught Exception:', error);
-  process.exit(1);
+  await shutdown('UNCAUGHT_EXCEPTION');
 });
 
 // Handle unhandled promise rejections
-process.on('unhandledRejection', (error) => {
+process.on('unhandledRejection', async (error) => {
   logger.error('Unhandled Rejection:', error);
-  process.exit(1);
+  await shutdown('UNHANDLED_REJECTION');
 });
 
-// Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM signal received. Shutting down gracefully...');
-  try {
-    await pool?.end();
-    logger.info('Database connections closed');
-    process.exit(0);
-  } catch (error) {
-    logger.error('Error during shutdown:', error);
-    process.exit(1);
-  }
-});
-
+// Start the server
 startServer();

@@ -1,7 +1,11 @@
-import connectDB from '../config/dbConfig.js';
+import { getPool } from '../config/dbConfig.js';
 
 const createDashboardTable = async () => {
-  const connection = await connectDB();
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database pool not initialized');
+  }
+  
   const query = `
     CREATE TABLE IF NOT EXISTS Dashboard (
       DashboardID VARCHAR(36) PRIMARY KEY,
@@ -14,8 +18,13 @@ const createDashboardTable = async () => {
       FOREIGN KEY (AdminID) REFERENCES Admin(AdminID)
     )
   `;
-  await connection.query(query);
-  await connection.end();
+  try {
+    await pool.query(query);
+    console.log('Dashboard table initialized successfully');
+  } catch (error) {
+    console.error('Error creating Dashboard table:', error);
+    throw error; // Propagate the error for handling in `initializeTables`
+  }
 };
 
 export { createDashboardTable };

@@ -1,19 +1,19 @@
 import express from 'express';
-import authController from '../controller/authController.js';
-import authenticate from '../middleware/authMiddleware.js';
+import { login, logout, createAdmin, getAllAdmins, deleteAdmin } from '../controller/authController.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // Public routes
-router.post('/login', authController.login);
+router.post('/login', login);
 
 // Protected routes
-router.use(authenticate);
-router.post('/logout', authController.logout);
+router.use(authMiddleware);
+router.post('/logout', logout);
 
 // Superadmin only routes
-router.post('/admin', authController.createAdmin);
-router.get('/admin', authController.getAllAdmins);
-router.delete('/admin/:id', authController.deleteAdmin);
+router.post('/admin', createAdmin);
+router.get('/admin', getAllAdmins);
+router.delete('/admin/:id', deleteAdmin);
 
 export default router;

@@ -1,7 +1,11 @@
-import connectDB from '../config/dbConfig.js';
+import { getPool } from '../config/dbConfig.js';
 
 const createEventTable = async () => {
-  const connection = await connectDB();
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database pool not initialized');
+  }
+
   const query = `
     CREATE TABLE IF NOT EXISTS Event (
       EventID VARCHAR(36) PRIMARY KEY,
@@ -16,8 +20,13 @@ const createEventTable = async () => {
       FOREIGN KEY (AdminID) REFERENCES Admin(AdminID)
     )
   `;
-  await connection.query(query);
-  await connection.end();
+  try {
+    await pool.query(query);
+    console.log('Event table initialized successfully');
+  } catch (error) {
+    console.error('Error creating Event table:', error);
+    throw error;
+  }
 };
 
 export { createEventTable };

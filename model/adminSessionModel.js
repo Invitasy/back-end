@@ -1,7 +1,11 @@
-import connectDB from '../config/dbConfig.js';
+import { getPool } from '../config/dbConfig.js';
 
 const createAdminSessionTable = async () => {
-  const connection = await connectDB();
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database pool not initialized');
+  }
+
   const query = `
     CREATE TABLE IF NOT EXISTS AdminSession (
       SessionID VARCHAR(36) PRIMARY KEY,
@@ -16,8 +20,13 @@ const createAdminSessionTable = async () => {
       FOREIGN KEY (EventID) REFERENCES Event(EventID)
     )
   `;
-  await connection.query(query);
-  await connection.end();
+  try {
+    await pool.query(query);
+    console.log('AdminSession table initialized successfully');
+  } catch (error) {
+    console.error('Error creating AdminSession table:', error);
+    throw error;
+  }
 };
 
 export { createAdminSessionTable };

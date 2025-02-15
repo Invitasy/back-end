@@ -1,7 +1,11 @@
-import connectDB from '../config/dbConfig.js';
+import { getPool } from '../config/dbConfig.js';
 
 const createGuestTable = async () => {
-  const connection = await connectDB();
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database pool not initialized');
+  }
+
   const query = `
     CREATE TABLE IF NOT EXISTS InvitedGuest (
       GuestID VARCHAR(36) PRIMARY KEY,
@@ -18,8 +22,13 @@ const createGuestTable = async () => {
       FOREIGN KEY (AdminID) REFERENCES Admin(AdminID)
     )
   `;
-  await connection.query(query);
-  await connection.end();
+  try {
+    await pool.query(query);
+    console.log('InvitedGuest table initialized successfully');
+  } catch (error) {
+    console.error('Error creating InvitedGuest table:', error);
+    throw error;
+  }
 };
 
 export { createGuestTable };

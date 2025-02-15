@@ -1,7 +1,10 @@
-import connectDB from '../config/dbConfig.js';
+import { getPool } from '../config/dbConfig.js';
 
 const createSouvenirTable = async () => {
-  const connection = await connectDB();
+  const pool = getPool();
+  if (!pool) {
+    throw new Error('Database pool not initialized');
+  }
   const query = `
     CREATE TABLE IF NOT EXISTS Souvenir (
       SouvenirID VARCHAR(36) PRIMARY KEY,
@@ -13,8 +16,13 @@ const createSouvenirTable = async () => {
       FOREIGN KEY (GuestID) REFERENCES InvitedGuest(GuestID)
     )
   `;
-  await connection.query(query);
-  await connection.end();
+  try {
+    await pool.query(query);
+    console.log('Souvenir table initialized successfully');
+  } catch (error) {
+    console.error('Error creating Souvenir table:', error);
+    throw error;
+  }
 };
 
 export { createSouvenirTable };

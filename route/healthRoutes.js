@@ -1,6 +1,6 @@
 import express from 'express';
 import healthController from '../controller/healthController.js';
-import authenticate from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/check', healthController.checkHealth);
 
 // Protected routes - only for admins
-router.use(authenticate);
+router.use(authMiddleware);
 router.get('/history', healthController.getHealthHistory);
 router.post('/cleanup', healthController.cleanupHealthHistory);
 

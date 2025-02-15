@@ -106,3 +106,6 @@ class EventBackupService {
     }
   }
 }
+
+// Added default export
+export default EventBackupService;
