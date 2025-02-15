@@ -1,0 +1,223 @@
+openapi: 3.0.0
+tags:
+  - name: Backup & Export
+    description: Event backup and export operations
+  - name: Health & Monitoring
+    description: System health and monitoring endpoints
+  - name: Session Management
+    description: Admin session and device management
+
+paths:
+  /api/events/{eventId}/backups:
+    get:
+      tags:
+        - Backup & Export
+      summary: Get all backups for an event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of event backups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BackupInfo'
+    post:
+      tags:
+        - Backup & Export
+      summary: Create manual backup for an event
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: eventId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Backup created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupInfo'
+
+  /api/admin/sessions:
+    get:
+      tags:
+        - Session Management
+      summary: Get all active sessions for current admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of active sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SessionInfo'
+                  sessionCount:
+                    $ref: '#/components/schemas/SessionCount'
+
+  /api/admin/sessions/{sessionId}:
+    delete:
+      tags:
+        - Session Management
+      summary: Deactivate a specific session
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session deactivated successfully
+
+  /api/admin/sessions/all/except-current:
+    delete:
+      tags:
+        - Session Management
+      summary: Deactivate all other sessions except current
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: All other sessions deactivated successfully
+
+  /api/health/check:
+    get:
+      tags:
+        - Health & Monitoring
+      summary: Check system health status
+      responses:
+        '200':
+          description: System health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /api/health/history:
+    get:
+      tags:
+        - Health & Monitoring
+      summary: Get system health history
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: days
+          schema:
+            type: integer
+            default: 1
+          description: Number of days of history to retrieve
+      responses:
+        '200':
+          description: Health check history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthRecord'
+
+components:
+  schemas:
+    BackupInfo:
+      type: object
+      properties:
+        backupId:
+          type: string
+        eventId:
+          type: string
+        fileName:
+          type: string
+        cloudUrl:
+          type: string
+        backupType:
+          type: string
+          enum: [full, event]
+        status:
+          type: string
+          enum: [pending, completed, failed, deleted]
+        createdAt:
+          type: string
+          format: date-time
+
+    SessionInfo:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        deviceInfo:
+          type: string
+        lastActive:
+          type: string
+          format: date-time
+        eventId:
+          type: string
+        eventName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    SessionCount:
+      type: object
+      properties:
+        activeSessionCount:
+          type: integer
+        maxSessions:
+          type: integer
+        remainingSessions:
+          type: integer
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy, degraded]
+        message:
+          type: string
+        responseTime:
+          type: integer
+        connectionCount:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+
+    HealthRecord:
+      type: object
+      properties:
+        healthId:
+          type: string
+        status:
+          type: string
+          enum: [healthy, unhealthy, degraded]
+        responseTime:
+          type: integer
+        connectionCount:
+          type: integer
+        errorMessage:
+          type: string
+        createdAt:
+          type: string
+          format: date-time

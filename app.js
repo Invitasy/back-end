@@ -5,13 +5,14 @@ import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './config/swaggerConfig.js';
 import errorMiddleware from './middleware/errorMiddleware.js';
-
 // Routes
 import authRoutes from './route/authRoutes.js';
 import guestRoutes from './route/guestRoutes.js';
 import qrRoutes from './route/qrRoutes.js';
 import dashboardRoutes from './route/dashboardRoutes.js';
 import healthRoutes from './route/healthRoutes.js';
+import sessionRoutes from './route/sessionRoutes.js';
+import backupRoutes from './route/backupRoutes.js';
 
 dotenv.config();
 
@@ -20,7 +21,9 @@ const app = express();
 // Basic middlewares
 app.use(cors());
 app.use(express.json());
-app.use(morgan('dev'));
+
+// Enhanced logging with response time
+app.use(morgan('combined'));
 
 // Swagger documentation - accessible without authentication
 app.use('/docs', swaggerUi.serve);
@@ -42,6 +45,8 @@ app.use('/api/guests', guestRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/health', healthRoutes);
+app.use('/api/admin', sessionRoutes); // New session management routes
+app.use('/api/events', backupRoutes); // Add backup routes
 
 // Basic root health check
 app.get('/', (req, res) => {

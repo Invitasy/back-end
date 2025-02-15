@@ -1,15 +1,15 @@
 import connectDB from '../config/dbConfig.js';
 
-// Function to create Checkin table
 const createCheckinTable = async () => {
   const connection = await connectDB();
   const query = `
-    CREATE TABLE IF NOT EXISTS Checkin (
-      id VARCHAR(36) PRIMARY KEY,
-      userId VARCHAR(36) NOT NULL,
-      checkinTime DATETIME DEFAULT CURRENT_TIMESTAMP,
-      status VARCHAR(50),
-      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    CREATE TABLE IF NOT EXISTS CheckInLog (
+      CheckInID VARCHAR(36) PRIMARY KEY,
+      GuestID VARCHAR(36),
+      CheckInDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+      CheckInMethod ENUM('qr', 'manual') NOT NULL,
+      CheckInStatus ENUM('success', 'failed') DEFAULT 'success',
+      FOREIGN KEY (GuestID) REFERENCES InvitedGuest(GuestID)
     )
   `;
   await connection.query(query);

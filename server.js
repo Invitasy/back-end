@@ -2,20 +2,33 @@ import app from './app.js';
 import connectDB from './config/dbConfig.js';
 import logger from './logger/logger.js';
 import { createAdminTable } from './model/adminModel.js';
+import { createEventTable } from './model/eventModel.js';
 import { createGuestTable } from './model/guestModel.js';
 import { createCheckinTable } from './model/checkinModel.js';
 import { createSouvenirTable } from './model/souvenirModel.js';
+import { createDashboardTable } from './model/dashboardModel.js';
+import { createDatabaseHealthTable } from './model/databaseHealthModel.js';
+import { createAdminSessionTable } from './model/adminSessionModel.js';
 import DatabaseHealth from './util/databaseHealth.js';
-import { scheduleBackups, scheduleHealthChecks } from './config/scheduleConfig.js';
+import { 
+  scheduleFullBackup, 
+  scheduleEventBackups,
+  scheduleHealthChecks,
+  scheduleSessionCleanup 
+} from './config/scheduleConfig.js';
 
 const PORT = process.env.PORT || 5000;
 
 const initializeTables = async () => {
   try {
     await createAdminTable();
+    await createEventTable();
+    await createAdminSessionTable();
+    await createDashboardTable();
     await createGuestTable();
     await createCheckinTable();
     await createSouvenirTable();
+    await createDatabaseHealthTable();
     logger.info('Database tables initialized successfully');
   } catch (error) {
     logger.error('Failed to initialize tables:', error);
@@ -23,10 +36,20 @@ const initializeTables = async () => {
   }
 };
 
+const startScheduledTasks = () => {
+  // Start all scheduled tasks
+  scheduleFullBackup();
+  scheduleEventBackups();
+  scheduleHealthChecks();
+  scheduleSessionCleanup();
+  logger.info('All scheduled tasks initialized');
+};
+
 const startServer = async () => {
   try {
     // Test database connection
-    await connectDB();
+    const pool = await connectDB();
+    logger.info('Database connection established');
     
     // Initialize database tables
     await initializeTables();
@@ -36,11 +59,12 @@ const startServer = async () => {
     logger.info('Initial health check:', healthStatus);
 
     // Start scheduled tasks
-    scheduleBackups();
-    scheduleHealthChecks();
+    startScheduledTasks();
     
+    // Start Express server
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);
+      logger.info('Documentation available at /docs');
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
@@ -63,8 +87,14 @@ process.on('unhandledRejection', (error) => {
 // Handle graceful shutdown
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM signal received. Shutting down gracefully...');
-  await closePool();
-  process.exit(0);
+  try {
+    await pool?.end();
+    logger.info('Database connections closed');
+    process.exit(0);
+  } catch (error) {
+    logger.error('Error during shutdown:', error);
+    process.exit(1);
+  }
 });
 
 startServer();
